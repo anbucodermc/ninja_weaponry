@@ -1,0 +1,13 @@
+{
+  "loader": "forge:separate_transforms",
+  "gui_light": "front",
+  "base": { "parent": "ninjaweaponry:item/nunchucks_2d" },
+  "perspectives": {
+    "firstperson_righthand": { "parent": "ninjaweaponry:item/nunchucks_3d" },
+    "firstperson_lefthand": { "parent": "ninjaweaponry:item/nunchucks_3d" },
+    "thirdperson_righthand": { "parent": "ninjaweaponry:item/nunchucks_3d" },
+    "thirdperson_lefthand": { "parent": "ninjaweaponry:item/nunchucks_3d" },
+    "ground": { "parent": "ninjaweaponry:item/nunchucks_3d" },
+    "fixed": { "parent": "ninjaweaponry:item/nunchucks_2d" }
+  }
+}

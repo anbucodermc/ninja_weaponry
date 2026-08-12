@@ -1,0 +1,30 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "${mod_license}"
+issueTrackerURL = "https://github.com/OWNER/ninja-weaponry/issues"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+authors = "${mod_authors}"
+description = '''
+Adds ninja weapons to Minecraft: a fast-swinging Katana, throwable/melee Shuriken, and
+high-knockback Nunchucks. Each item ships a 2D inventory icon and a 3D held model.
+'''
+
+# Depend on Forge and Minecraft. Version ranges are intentionally broad for the 26.2 line;
+# tighten them once you pin an exact Forge/Minecraft build in gradle.properties.
+[[dependencies.ninjaweaponry]]
+    modId = "forge"
+    mandatory = true
+    versionRange = "[26,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.ninjaweaponry]]
+    modId = "minecraft"
+    mandatory = true
+    versionRange = "[1,)"
+    ordering = "NONE"
+    side = "BOTH"
