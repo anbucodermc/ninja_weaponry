@@ -5,7 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -31,7 +31,7 @@ public final class ModCreativeTabs {
     private ModCreativeTabs() {
     }
 
-    public static void register(IEventBus bus) {
+    public static void register(BusGroup bus) {
         TABS.register(bus);
     }
 }

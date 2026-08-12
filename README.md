@@ -15,52 +15,59 @@ All three appear in a dedicated **Ninja Weaponry** creative tab.
 
 ## Requirements
 
-- **JDK 21** (Forge 26.2 targets Java 21). A newer JDK is fine as an installed toolchain, but the
-  Gradle Java toolchain is pinned to 21 in `build.gradle`.
-- **Gradle 8.8** via the wrapper (see the one-time setup below).
-- Internet access on the first build (ForgeGradle downloads and deobfuscates Minecraft).
+- **JDK 25** — Forge 26.2 compiles and runs on Java 25. The Gradle toolchain is pinned to 25 in
+  `build.gradle`, and Gradle 9.3 itself runs on Java 25.
+- **Gradle 9.3+** — required by ForgeGradle 7. Provided by the committed wrapper; just run `gradlew`.
+- Internet access on the first build (ForgeGradle downloads, remaps, and recompiles Minecraft).
 
-## ⚠️ One-time setup: generate the Gradle wrapper JAR
+The toolchain here is specific and worth stating plainly, because the versions are tightly coupled:
 
-This repo ships `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.properties`, but the
-binary `gradle/wrapper/gradle-wrapper.jar` is **not** committed (it was not generated in the
-environment that scaffolded the project). Produce it once using **any** of these:
+| Layer | Version | Why |
+| --- | --- | --- |
+| Minecraft / Forge | `26.2` / `26.2-65.1.0` | The target |
+| ForgeGradle | `7.0.32` | The Forge 26.2 build plugin (the "mavenizer" rewrite, not FG6) |
+| Gradle | `9.3.0` (wrapper) | Minimum required by ForgeGradle 7 |
+| Java | `25` | Required by Forge 26.2; also runs Gradle 9.3 |
 
-- **IntelliJ IDEA** — `File ▸ Open` this folder. IntelliJ imports the Gradle project and creates the
-  wrapper JAR automatically. (This is the recommended Forge workflow.)
-- **A local Gradle install** — install Gradle 8.8, then run:
-  ```bash
-  gradle wrapper --gradle-version 8.8
-  ```
-- After that, `./gradlew` (or `gradlew.bat` on Windows) works normally.
+The Gradle wrapper (`gradlew`, `gradlew.bat`, `gradle/wrapper/`, including `gradle-wrapper.jar`) is
+committed, so no wrapper setup is needed — clone and build.
 
 ## Build & run
 
-```bash
-# Windows
-gradlew.bat build          # produces build/libs/ninjaweaponry-<mcver>-1.0.0.jar
-gradlew.bat runClient      # launch a dev client with the mod loaded
-gradlew.bat runData        # run data generation into src/generated/resources
+On Windows PowerShell, prefix with `.\` (PowerShell will not run `gradlew.bat` from the current
+directory otherwise):
 
-# macOS / Linux
-./gradlew build
-./gradlew runClient
+```bash
+.\gradlew.bat build
 ```
 
-The finished mod JAR lands in `build/libs/`. Drop it into a Forge 26.2 instance's `mods/` folder.
+```bash
+.\gradlew.bat runClient
+```
 
-## Pinning exact versions
+```bash
+.\gradlew.bat runData
+```
 
-`gradle.properties` carries placeholder version values for the 26.2 line:
+(`build` produces the mod jar; `runClient` launches a dev client with the mod loaded; `runData`
+runs data generation into `src/generated/resources`. On macOS/Linux use `./gradlew` instead.)
+
+The finished mod JAR lands in `build/libs/` as `ninjaweaponry-26.2-1.0.0.jar`. Drop it into a
+Forge 26.2 instance's `mods/` folder.
+
+## Versions
+
+The Minecraft/Forge versions are pinned in `gradle.properties`:
 
 ```properties
-minecraft_version=1.21.x
-forge_version=26.2-65.1.0
-mappings_version=1.21.x
+minecraft_version=26.2
+forge_version=65.1.0
+mappings_channel=official
+mappings_version=26.2
 ```
 
-Replace these with the exact Minecraft/Forge build you are targeting (from
-<https://files.minecraftforge.net/>) before your first build.
+To target a different 26.x build, change these (values come from
+<https://files.minecraftforge.net/>).
 
 ---
 
@@ -108,12 +115,24 @@ real 3D object in hand and on the ground.
 The shipped textures under `assets/ninjaweaponry/textures/` are simple 16×16 **placeholders**.
 Replace them with real art (same file names) whenever you like.
 
-## Notes on Forge 26.2
+## Notes on the Forge 26.2 API
 
-The code follows established Forge conventions (`DeferredRegister`, `ThrowableItemProjectile`,
-`CreativeModeTab.builder`, the `separate_transforms` model loader). If the exact 26.2 build renames
-a class or changes a constructor signature (e.g. `SwordItem`/attribute wiring), the change is
-localised to the `item/` and `registry/` classes.
+Forge 26.2 changed a number of APIs relative to the 1.20/1.21 era. This project is written against
+the real 26.2 API and **compiles cleanly** (`gradlew build` → `BUILD SUCCESSFUL`). Notable changes
+handled here:
+
+- **EventBus 7** — the mod bus is a `BusGroup` from `getModBusGroup()` (not `IEventBus` /
+  `getModEventBus()`); `@SubscribeEvent` moved to `net.minecraftforge.eventbus.api.listener`.
+- **Component-based items** — `SwordItem`/`Tier` were removed; weapons are built with
+  `Item.Properties.sword(ToolMaterial, damage, speed)`. `Item.hurtEnemy` now returns `void`, and
+  `Item.use` returns `InteractionResult` (no more `InteractionResultHolder`).
+- **Projectiles** — `ThrowableItemProjectile` moved to `...projectile.throwableitemprojectile`;
+  entity damage uses `hurtOrSimulate`, and `spawnAtLocation` takes a `ServerLevel`.
+- **Mappings renames** — `ResourceLocation` → `Identifier`; `EntityType.Builder.build` takes a
+  `ResourceKey`; `Level#isClientSide` is now the method `isClientSide()`.
+
+The one remaining compiler warning is that `FMLJavaModLoadingContext.get()` is deprecated for
+removal; it still functions in 26.2.
 
 ## License
 

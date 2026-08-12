@@ -1,7 +1,9 @@
 plugins {
+    id 'java'
     id 'eclipse'
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    // Forge 26.2 uses ForgeGradle 7 (the "mavenizer" rewrite), NOT the classic FG6 userdev flow.
+    id 'net.minecraftforge.gradle' version '7.0.32'
 }
 
 version = "${mod_version}"
@@ -12,64 +14,40 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    // Forge 26.2 compiles/runs on Java 25. The Gradle daemon itself runs on JDK 21
+    // (org.gradle.java.home) because Gradle 8.x cannot launch on JDK 25.
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
 
+repositories {
+    mavenCentral()
+    // Forge's own maven + the Minecraft libraries maven, provided by the 'fg' extension.
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+}
+// The mavenizer repository serves the on-the-fly generated mapped Minecraft/Forge artifact.
+minecraft.mavenizer(repositories)
+
 minecraft {
-    // 'official' mappings from Mojang. Swap channel/version in gradle.properties if you use
-    // a different mapping set for the 26.2 build you target.
-    mappings channel: "${mappings_channel}", version: "${mappings_version}"
+    // Official Mojang mappings at the 26.2 version.
+    mappings 'official', "${mappings_version}"
+}
 
-    // copyIdeResources = true
-
-    runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        client {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
-        server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
-        }
-
-        data {
-            workingDirectory project.file('run-data')
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'),
-                    '--existing', file('src/main/resources/')
-        }
-    }
+dependencies {
+    // Register + consume the mavenized Forge dependency (returns a provider Gradle can resolve).
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-repositories {
-    maven { url = 'https://maven.minecraftforge.net/' }
-    mavenCentral()
-}
-
-dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-}
-
-// Populate mods.toml / manifest placeholders from gradle.properties.
+// Populate mods.toml / pack.mcmeta placeholders from gradle.properties.
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            mod_id       : mod_id,
-            mod_name     : mod_name,
-            mod_version  : mod_version,
-            mod_authors  : mod_authors,
-            mod_license  : mod_license,
+            mod_id     : mod_id,
+            mod_name   : mod_name,
+            mod_version: mod_version,
+            mod_authors: mod_authors,
+            mod_license: mod_license,
     ]
     inputs.properties replaceProperties
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
@@ -88,5 +66,4 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Vendor' : mod_authors
         ])
     }
-    finalizedBy 'reobfJar'
 }
