@@ -28,9 +28,39 @@ repositories {
 // The mavenizer repository serves the on-the-fly generated mapped Minecraft/Forge artifact.
 minecraft.mavenizer(repositories)
 
+// In a dev run the mod's compiled classes (build/classes/java/main) and processed resources
+// (build/resources/main) live in separate directories. FML unifies them into one mod only if it
+// is told they belong together via the fml.modFolders system property (format: modid%%path,
+// entries separated by the platform path separator).
+def _mainOutput = sourceSets.main.output
+def modFoldersProp = (_mainOutput.classesDirs.files + [_mainOutput.resourcesDir])
+        .findAll { it != null }
+        .collect { "${mod_id}%%${it.absolutePath}" }
+        .join(File.pathSeparator)
+
 minecraft {
     // Official Mojang mappings at the 26.2 version.
     mappings 'official', "${mappings_version}"
+
+    // FG7 run configurations. Each run declares the mod (source set) and sets fml.modFolders so
+    // FML constructs the mod from the split dev output directories.
+    runs {
+        client {
+            systemProperty 'fml.modFolders', modFoldersProp
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
+        server {
+            systemProperty 'fml.modFolders', modFoldersProp
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
+        data {
+            systemProperty 'fml.modFolders', modFoldersProp
+            mods { "${mod_id}" { source sourceSets.main } }
+            args '--mod', mod_id, '--all',
+                    '--output', file('src/generated/resources').absolutePath,
+                    '--existing', file('src/main/resources').absolutePath
+        }
+    }
 }
 
 dependencies {
@@ -39,6 +69,12 @@ dependencies {
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+// Dev-run fix: FG7's dev launch registers only the resources output dir as the mod, so the split
+// build/classes vs build/resources layout makes FML report the @Mod class "missing". Emitting
+// processed resources into the classes directory puts mods.toml and the compiled mod class in one
+// directory, which FML constructs into a single mod. (Harmless for the packaged jar.)
+sourceSets.main.output.resourcesDir = sourceSets.main.java.classesDirectory
 
 // Populate mods.toml / pack.mcmeta placeholders from gradle.properties.
 tasks.named('processResources', ProcessResources).configure {

@@ -95,20 +95,38 @@ ninja_weaponry/
         └── data/ninjaweaponry/recipes/
 ```
 
-### How "2D inventory + 3D held" works
+### Item models (3D)
 
-Each item's top-level model (e.g. `models/item/katana.json`) uses Forge's
-`forge:separate_transforms` loader. The `base`/`fixed`/`gui` perspective points at a flat
-`item/generated` sprite (`*_2d.json`), while the first-person, third-person, and ground
-perspectives point at a cuboid `*_3d.json` model. Result: a clean flat icon in the inventory and a
-real 3D object in hand and on the ground.
+Each item (`models/item/katana.json`, etc.) is a cuboid `elements` model with per-perspective
+`display` transforms — a real 3D object in hand, on the ground, and in the inventory (the `gui`
+transform angles it for a readable icon).
+
+> Note: Forge 26.2 **removed** the `forge:separate_transforms` model loader that older versions used
+> to pair a flat 2D inventory sprite with a separate 3D held model. A strict flat-icon-plus-distinct-
+> 3D-model split now requires a custom baked `ItemModel`; this mod uses one 3D model across all
+> perspectives instead.
 
 ## Client / server separation
 
 - `ShurikenItem#use` only spawns the projectile on the logical server; the projectile entity is
-  registered on the common bus and synced to clients by vanilla's entity tracker.
-- Renderer registration lives in `client/ClientSetup`, guarded by `@Mod.EventBusSubscriber(..., Dist.CLIENT)`
-  so it is never classloaded on a dedicated server.
+  registered and synced to clients by vanilla's entity tracker.
+- Renderer registration lives in `client/ClientSetup#init`, invoked from the mod constructor only
+  when `FMLEnvironment.dist == Dist.CLIENT`, so client classes are never loaded on a dedicated
+  server. EventBus 7 gives `EntityRenderersEvent.RegisterRenderers` its own static `BUS`, so the
+  listener is added there rather than through `@Mod.EventBusSubscriber`.
+
+## Data generation
+
+`gradlew runData` runs `data/DataGenerators` (wired via `GatherDataEvent`) and writes the en_us
+language file to `src/generated/resources` (committed, and on the main resource path). Crafting
+recipes are hand-authored under `data/ninjaweaponry/recipes` because 26.2's vanilla recipe-datagen
+entry point (`RecipeProvider.Runner`) is not accessible to mods.
+
+## Verified
+
+`gradlew build`, `gradlew runData`, and `gradlew runClient` all succeed against Forge 26.2: the mod
+constructs, registers its items/entity/creative tab, generates its language file, and loads into the
+Minecraft client (main menu reached, all three item models load without error).
 
 ## Textures
 

@@ -3,7 +3,11 @@ build/
 out/
 run/
 run-data/
-src/generated/
+runs/
+
+# Generated resources are committed (so a clone builds complete without running datagen),
+# but the datagen hash cache is not.
+src/generated/resources/.cache/
 
 # Gradle
 .gradle/

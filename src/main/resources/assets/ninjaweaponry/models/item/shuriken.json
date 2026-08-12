@@ -1,13 +1,58 @@
 {
-  "loader": "forge:separate_transforms",
-  "gui_light": "front",
-  "base": { "parent": "ninjaweaponry:item/shuriken_2d" },
-  "perspectives": {
-    "firstperson_righthand": { "parent": "ninjaweaponry:item/shuriken_3d" },
-    "firstperson_lefthand": { "parent": "ninjaweaponry:item/shuriken_3d" },
-    "thirdperson_righthand": { "parent": "ninjaweaponry:item/shuriken_3d" },
-    "thirdperson_lefthand": { "parent": "ninjaweaponry:item/shuriken_3d" },
-    "ground": { "parent": "ninjaweaponry:item/shuriken_3d" },
-    "fixed": { "parent": "ninjaweaponry:item/shuriken_2d" }
+  "textures": {
+    "0": "ninjaweaponry:item/shuriken",
+    "particle": "ninjaweaponry:item/shuriken"
+  },
+  "elements": [
+    {
+      "name": "star",
+      "from": [3, 7.5, 3],
+      "to": [13, 8.5, 13],
+      "faces": {
+        "up":    { "uv": [0, 0, 16, 16], "texture": "#0" },
+        "down":  { "uv": [0, 0, 16, 16], "texture": "#0" },
+        "north": { "uv": [0, 7, 16, 8], "texture": "#0" },
+        "east":  { "uv": [0, 7, 16, 8], "texture": "#0" },
+        "south": { "uv": [0, 7, 16, 8], "texture": "#0" },
+        "west":  { "uv": [0, 7, 16, 8], "texture": "#0" }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [90, 0, 0],
+      "translation": [0, 0, 0],
+      "scale": [1.0, 1.0, 1.0]
+    },
+    "fixed": {
+      "rotation": [90, 0, 0],
+      "translation": [0, 0, 0],
+      "scale": [1.0, 1.0, 1.0]
+    },
+    "thirdperson_righthand": {
+      "rotation": [90, 0, 0],
+      "translation": [0, 2, 0],
+      "scale": [0.6, 0.6, 0.6]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [90, 0, 0],
+      "translation": [0, 2, 0],
+      "scale": [0.6, 0.6, 0.6]
+    },
+    "firstperson_righthand": {
+      "rotation": [90, 0, 0],
+      "translation": [0, 3, 0],
+      "scale": [0.55, 0.55, 0.55]
+    },
+    "firstperson_lefthand": {
+      "rotation": [90, 0, 0],
+      "translation": [0, 3, 0],
+      "scale": [0.55, 0.55, 0.55]
+    },
+    "ground": {
+      "rotation": [90, 0, 0],
+      "translation": [0, 2, 0],
+      "scale": [0.4, 0.4, 0.4]
+    }
   }
 }
